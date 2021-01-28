@@ -293,9 +293,8 @@ def save_data():
 
 
 def main():
-    for i in range(10):
-        get_python()
-    # get_java()
+    get_python()
+    get_java()
     # get_web()
     # get_ai()
     # get_arch()
