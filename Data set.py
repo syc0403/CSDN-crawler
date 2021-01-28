@@ -15,20 +15,28 @@ text = df.text.tolist()  # 将每条标题都组成列表
 # 使用结巴分词器
 with open('stopwords.txt','r',encoding='utf-8') as sw:
     stopwords = sw.read().split('\n')
+
 text_s = []  # 存放分词后的结果
 for line in text:
     current_segment = jieba.lcut(line)  # 把这句话分词
-    if current_segment not in stopwords and current_segment != "" and len(current_segment) != 1:
-        # 确实有分词而却不包括换行符
-        text_s.append(current_segment)
-print(text_s)
+    # 确实有分词而却不包括换行符
+    if len(current_segment) > 1 and current_segment != 'r\n':
+        # 去空格
+        L = []
+        for v in current_segment:
+            v = str.strip(v)
+            if v:
+                L.append(v)
+        text_s.append(L)
 text_clean = text_s
 # 导入停用词
 # index_col=False使panadas不用第一列作为行的名称
 # sep:指定分隔符，默认是‘，’
 # 不设置quoting，默认会去除英文双引号，只留下英文双引号内的内容，设置quoting = 3，会如实读取内容
-
-
+# with open('stopwords.txt','r',encoding='utf-8') as sw:
+#     stopwords = sw.read()
+# print(stopwords)
+#
 # # 定义筛选函数
 # def drop_stopwords(texts, stopwords):
 #     text_clean = []  # 存放筛选后的
@@ -40,13 +48,13 @@ text_clean = text_s
 #             line_clean.append(word)
 #         text_clean.append(line_clean)
 #     return text_clean
-
-
+#
+#
 # # 把数据传入函数
 # texts = df.text.values.tolist()
 # text_clean = drop_stopwords(texts, stopwords)
 # df_content=pd.DataFrame({'contents_clean':text_clean})
-
+# print(df_content.head())
 '''
 TF-IDF用于评估一个字词对于语料库中一个文本的重要程度。
 TF(词频)=在某一类文本中词条出现的次数/该类中所有词条数目
@@ -54,12 +62,12 @@ IDF(逆文本频率)=log(语料库中文本总数)/(包含该词条的文本数+
 TF-IDF=TF*IDF
 '''
 # 提取关键字
-index = 1
-print(df['text'][index])
-text_s_str = ''.join(text_s[index])  # 将一开始分词后的结果中每篇文章的词库连接成字符串
-# 返回TF/IDF 权重最大的5个关键字  topk:选择几个关键词返回
-print('')
-print("关键词: ", " ".join(jieba.analyse.extract_tags(text_s_str, topK=5, withWeight=False)))
+# index = 1
+# print(df['text'][index])
+# text_s_str = ''.join(text_s[index])  # 将一开始分词后的结果中每篇文章的词库连接成字符串
+# # 返回TF/IDF 权重最大的5个关键字  topk:选择几个关键词返回
+# print('')
+# print("关键词: ", " ".join(jieba.analyse.extract_tags(text_s_str, topK=5, withWeight=False)))
 
 '''
 LDA主题模型是一种文档生成模型，是一种非监督机器学习技术。
