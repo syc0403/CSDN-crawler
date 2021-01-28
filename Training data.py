@@ -14,20 +14,22 @@ with open('Training data.csv', 'w', encoding='utf-8', newline='') as csvfile:
     with open('Training data.csv', 'r', encoding='utf-8', newline='') as fe:
         reader = csv.reader(fe)
         if not [row for row in reader]:
-            writer.writerow(['类别', '标题'])
+            writer.writerow(['类别', '标题','内容'])
 
 
 def get_python():
     url = 'https://blog.csdn.net/nav/python'
-    response = requests.get(url, headers=headers, timeout=30)
+    response = requests.get(url, headers=headers, timeout= 30)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
-    items = soup.find_all('div', class_='title')
+    items = soup.find_all('div', class_='list_con')
     python_blog = []
     for itm in items:
         python_class = 'python'
         python_title = itm.find('a').text.strip()  # strip()去空格
-        b = (python_class, python_title)
+        text_ = itm.find('div', class_='summary oneline').text  # 详情
+        text = text_.strip()
+        b = (python_class, python_title,text)
         python_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -45,12 +47,14 @@ def get_java():
     response = requests.get(url, headers=headers, timeout=30)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
-    items = soup.find_all('div', class_='title')
+    items = soup.find_all('div', class_='list_con')
     java_blog = []
     for itm in items:
         java_class = 'java'
         java_title = itm.find('a').text.strip()  # strip()去空格
-        b = (java_class, java_title)
+        text_ = itm.find('div', class_='summary oneline').text  # 详情
+        text = text_.strip()
+        b = (java_class, java_title,text)
         java_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -68,12 +72,14 @@ def get_web():
     response = requests.get(url, headers=headers, timeout=30)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
-    items = soup.find_all('div', class_='title')
+    items = soup.find_all('div', class_='list_con')
     web_blog = []
     for itm in items:
         web_class = '前端'
         web_title = itm.find('a').text.strip()  # strip()去空格
-        b = (web_class, web_title)
+        text_ = itm.find('div', class_='summary oneline').text  # 详情
+        text = text_.strip()
+        b = (web_class, web_title,text)
         web_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -91,12 +97,14 @@ def get_ai():
     response = requests.get(url, headers=headers, timeout=30)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
-    items = soup.find_all('div', class_='title')
+    items = soup.find_all('div', class_='list_con')
     ai_blog = []
     for itm in items:
         ai_class = 'AI'
         ai_title = itm.find('a').text.strip()  # strip()去空格
-        b = (ai_class, ai_title)
+        text_ = itm.find('div', class_='summary oneline').text  # 详情
+        text = text_.strip()
+        b = (ai_class, ai_title,text)
         ai_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -114,12 +122,14 @@ def get_arch():
     response = requests.get(url, headers=headers, timeout=30)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
-    items = soup.find_all('div', class_='title')
+    items = soup.find_all('div', class_='list_con')
     arch_blog = []
     for itm in items:
         arch_class = '架构'
         arch_title = itm.find('a').text.strip()  # strip()去空格
-        b = (arch_class, arch_title)
+        text_ = itm.find('div', class_='summary oneline').text  # 详情
+        text = text_.strip()
+        b = (arch_class, arch_title,text)
         arch_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -137,12 +147,14 @@ def get_block():
     response = requests.get(url, headers=headers, timeout=30)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
-    items = soup.find_all('div', class_='title')
+    items = soup.find_all('div', class_='list_con')
     block_blog = []
     for itm in items:
         block_class = '区块链'
         block_title = itm.find('a').text.strip()  # strip()去空格
-        b = (block_class, block_title)
+        text_ = itm.find('div', class_='summary oneline').text  # 详情
+        text = text_.strip()
+        b = (block_class, block_title,text)
         block_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -160,12 +172,14 @@ def get_db():
     response = requests.get(url, headers=headers, timeout=30)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
-    items = soup.find_all('div', class_='title')
+    items = soup.find_all('div', class_='list_con')
     db_blog = []
     for itm in items:
         db_class = '数据库'
         db_title = itm.find('a').text.strip()  # strip()去空格
-        b = (db_class, db_title)
+        text_ = itm.find('div', class_='summary oneline').text  # 详情
+        text = text_.strip()
+        b = (db_class, db_title,text)
         db_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -183,12 +197,14 @@ def get_G5():
     response = requests.get(url, headers=headers, timeout=30)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
-    items = soup.find_all('div', class_='title')
+    items = soup.find_all('div', class_='list_con')
     G5_blog = []
     for itm in items:
         G5_class = '5G'
         G5_title = itm.find('a').text.strip()  # strip()去空格
-        b = (G5_class, G5_title)
+        text_ = itm.find('div', class_='summary oneline').text  # 详情
+        text = text_.strip()
+        b = (G5_class, G5_title,text)
         G5_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -206,12 +222,14 @@ def get_game():
     response = requests.get(url, headers=headers, timeout=30)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
-    items = soup.find_all('div', class_='title')
+    items = soup.find_all('div', class_='list_con')
     game_blog = []
     for itm in items:
         game_class = '游戏开发'
         game_title = itm.find('a').text.strip()  # strip()去空格
-        b = (game_class, game_title)
+        text_ = itm.find('div', class_='summary oneline').text  # 详情
+        text = text_.strip()
+        b = (game_class, game_title,text)
         game_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -229,12 +247,14 @@ def get_mobile():
     response = requests.get(url, headers=headers, timeout=30)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
-    items = soup.find_all('div', class_='title')
+    items = soup.find_all('div', class_='list_con')
     mobile_blog = []
     for itm in items:
         mobile_class = '移动开发'
         mobile_title = itm.find('a').text.strip()  # strip()去空格
-        b = (mobile_class, mobile_title)
+        text_ = itm.find('div', class_='summary oneline').text  # 详情
+        text = text_.strip()
+        b = (mobile_class, mobile_title,text)
         mobile_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -264,7 +284,7 @@ def save_data():
         for each in list(read)[1:]:
             i = tuple(each)
             # 使用sql语句添加数据
-            sql = "INSERT INTO blog VALUES " + str(i)
+            sql = "INSERT INTO train_data VALUES " + str(i)
             cursor.execute(sql)  # 执行sql语句
         conn.commit()
         cursor.close()
@@ -273,16 +293,17 @@ def save_data():
 
 
 def main():
-    get_python()
-    get_java()
-    get_web()
-    get_ai()
-    get_arch()
-    get_block()
-    get_db()
-    get_G5()
-    get_game()
-    get_mobile()
+    for i in range(10):
+        get_python()
+    # get_java()
+    # get_web()
+    # get_ai()
+    # get_arch()
+    # get_block()
+    # get_db()
+    # get_G5()
+    # get_game()
+    # get_mobile()
     save_data()
 
 
