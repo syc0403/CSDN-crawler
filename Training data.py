@@ -3,6 +3,8 @@ import requests
 from fake_useragent import UserAgent
 from bs4 import BeautifulSoup
 import pymysql
+import time
+import datetime
 
 # 随机爬虫头
 ua = UserAgent()
@@ -14,12 +16,12 @@ with open('Training data.csv', 'w', encoding='utf-8', newline='') as csvfile:
     with open('Training data.csv', 'r', encoding='utf-8', newline='') as fe:
         reader = csv.reader(fe)
         if not [row for row in reader]:
-            writer.writerow(['类别', '标题','内容'])
+            writer.writerow(['类别', '标题', '内容'])
 
 
 def get_python():
     url = 'https://blog.csdn.net/nav/python'
-    response = requests.get(url, headers=headers, timeout= 30)
+    response = requests.get(url, headers=headers, timeout=30)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
     items = soup.find_all('div', class_='list_con')
@@ -29,7 +31,7 @@ def get_python():
         python_title = itm.find('a').text.strip()  # strip()去空格
         text_ = itm.find('div', class_='summary oneline').text  # 详情
         text = text_.strip()
-        b = (python_class, python_title,text)
+        b = (python_class, python_title, text)
         python_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -54,7 +56,7 @@ def get_java():
         java_title = itm.find('a').text.strip()  # strip()去空格
         text_ = itm.find('div', class_='summary oneline').text  # 详情
         text = text_.strip()
-        b = (java_class, java_title,text)
+        b = (java_class, java_title, text)
         java_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -79,7 +81,7 @@ def get_web():
         web_title = itm.find('a').text.strip()  # strip()去空格
         text_ = itm.find('div', class_='summary oneline').text  # 详情
         text = text_.strip()
-        b = (web_class, web_title,text)
+        b = (web_class, web_title, text)
         web_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -104,7 +106,7 @@ def get_ai():
         ai_title = itm.find('a').text.strip()  # strip()去空格
         text_ = itm.find('div', class_='summary oneline').text  # 详情
         text = text_.strip()
-        b = (ai_class, ai_title,text)
+        b = (ai_class, ai_title, text)
         ai_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -129,7 +131,7 @@ def get_arch():
         arch_title = itm.find('a').text.strip()  # strip()去空格
         text_ = itm.find('div', class_='summary oneline').text  # 详情
         text = text_.strip()
-        b = (arch_class, arch_title,text)
+        b = (arch_class, arch_title, text)
         arch_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -154,7 +156,7 @@ def get_block():
         block_title = itm.find('a').text.strip()  # strip()去空格
         text_ = itm.find('div', class_='summary oneline').text  # 详情
         text = text_.strip()
-        b = (block_class, block_title,text)
+        b = (block_class, block_title, text)
         block_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -179,7 +181,7 @@ def get_db():
         db_title = itm.find('a').text.strip()  # strip()去空格
         text_ = itm.find('div', class_='summary oneline').text  # 详情
         text = text_.strip()
-        b = (db_class, db_title,text)
+        b = (db_class, db_title, text)
         db_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -204,7 +206,7 @@ def get_G5():
         G5_title = itm.find('a').text.strip()  # strip()去空格
         text_ = itm.find('div', class_='summary oneline').text  # 详情
         text = text_.strip()
-        b = (G5_class, G5_title,text)
+        b = (G5_class, G5_title, text)
         G5_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -229,7 +231,7 @@ def get_game():
         game_title = itm.find('a').text.strip()  # strip()去空格
         text_ = itm.find('div', class_='summary oneline').text  # 详情
         text = text_.strip()
-        b = (game_class, game_title,text)
+        b = (game_class, game_title, text)
         game_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -244,7 +246,7 @@ def get_game():
 
 def get_mobile():
     url = 'https://blog.csdn.net/nav/mobile'
-    response = requests.get(url, headers=headers, timeout=30)
+    response = requests.get(url, headers=headers, timeout=50)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
     items = soup.find_all('div', class_='list_con')
@@ -254,7 +256,7 @@ def get_mobile():
         mobile_title = itm.find('a').text.strip()  # strip()去空格
         text_ = itm.find('div', class_='summary oneline').text  # 详情
         text = text_.strip()
-        b = (mobile_class, mobile_title,text)
+        b = (mobile_class, mobile_title, text)
         mobile_blog.append(b)
     # a+ 将爬取到的数据追加写入csv文件中
     f = open('Training data.csv', 'a+', encoding='utf-8', newline='')
@@ -292,19 +294,68 @@ def save_data():
     print('训练数据保存成功')
 
 
-def main():
+def main(t):
     get_python()
     get_java()
-    # get_web()
-    # get_ai()
-    # get_arch()
-    # get_block()
-    # get_db()
-    # get_G5()
-    # get_game()
-    # get_mobile()
+    get_web()
+    get_ai()
+    get_arch()
+    get_block()
+    get_db()
+    get_G5()
+    get_game()
+    get_mobile()
     save_data()
+    # 定时任务
+    # 设定一个标签 确保是运行完定时任务后 再修改时间
+    flag = 0
+    # 获取当前时间
+    now = datetime.datetime.now()
+    # 启动时间
+    # 启动时间为当前时间 加5秒
+    sched_timer = datetime.datetime(now.year, now.month, now.day, now.hour, now.minute,
+                                    now.second) + datetime.timedelta(seconds=t)
+    # 启动时间也可自行手动设置
+    # sched_timer = datetime.datetime(2021,1,29,9,30,10)
+    while True:
+        # 当前时间
+        now = datetime.datetime.now()
+        # print(type(now))
+        # 本想用当前时间 == 启动时间作为判断标准，但是测试的时候 毫秒级的时间相等成功率很低 而且存在启动时间秒级与当前时间毫秒级比较的问题
+        # 后来换成了以下方式，允许1秒之差
+        if sched_timer < now < sched_timer + datetime.timedelta(seconds=t):
+            time.sleep(1)
+            # 建立链接
+            conn = pymysql.connect(host='localhost',
+                                   user='root',
+                                   password='333333',
+                                   database='blog',
+                                   charset='utf8')
+            # 拿到游标
+            cursor = conn.cursor()
+            # 读取csv文件
+            with open('CSDN blog.csv', 'r', encoding='utf-8') as f:
+                read = csv.reader(f)
+                # 统计csv文件中文章的数量
+                # 一行一行的存，除去第一行
+                for each in list(read)[1:]:
+                    i = tuple(each)
+                    # 使用sql语句添加数据
+                    sql = "INSERT INTO blog VALUES " + str(i)
+                    cursor.execute(sql)  # 执行sql语句
+                conn.commit()
+                cursor.close()
+                conn.close()
+            print('当前时间', now)
+            main(t)
+            flag = 1
+        else:
+            # 标签控制 表示主程序已运行，才修改定时任务时间
+            if flag == 1:
+                # 修改定时任务时间 时间间隔为2分钟
+                sched_timer = sched_timer + datetime.timedelta(seconds=t)
+                flag = 0
 
 
 if __name__ == '__main__':
-    main()
+    main(1)

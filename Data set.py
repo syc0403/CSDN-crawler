@@ -3,8 +3,8 @@ import pandas as pd
 import jieba
 import jieba.analyse
 # 自然语言处理的库gensim，需要传入list of list的结构
-from gensim import corpora, models, similarities
-import gensim
+from gensim import corpora, models
+from sklearn.model_selection import train_test_split
 
 # 创建连接
 conn = pymysql.connect(host='localhost', user='root', password='333333', database='blog')
@@ -15,12 +15,11 @@ text = df.text.tolist()  # 将每条标题都组成列表
 # 使用结巴分词器
 with open('stopwords.txt', 'r', encoding='utf-8') as sw:
     stopwords = sw.read().split('\n')
-
 text_s = []  # 存放分词后的结果
 for line in text:
     current_segment = jieba.lcut(line)  # 把这句话分词
     # 确实有分词而却不包括换行符
-    if len(current_segment) > 1 and current_segment != 'r\n':
+    if current_segment != 'r\n':
         # 去空格
         L = []
         for v in current_segment:
@@ -29,6 +28,7 @@ for line in text:
                 L.append(v)
         text_s.append(L)
 text_clean = text_s
+
 # 导入停用词
 # index_col=False使panadas不用第一列作为行的名称
 # sep:指定分隔符，默认是‘，’
@@ -101,7 +101,90 @@ def lda(text_clean):
 
 
 # lda(text_clean)
+'''
+Fit():
+解释：简单来说，就是求得训练集X的均值啊，方差啊，最大值啊，最小值啊这些训练集X固有的属性。可以理解为一个训练过程
 
-df_train = pd.DataFrame({'text_clean': text_clean, 'label': df['class']})
-print(df_train.head())
-print(df_train.label.unique())
+Transform(): 
+解释：在Fit的基础上，进行标准化，降维，归一化等操作（看具体用的是哪个工具，如PCA，StandardScaler等）。
+
+Fit_transform():
+解释：fit_transform是fit和transform的组合，既包括了训练又包含了转换。
+'''
+
+
+# 用贝叶斯多项式模型分类并输出分类结果
+def bys(ss):
+    df_train = pd.DataFrame({'text_clean': text_clean, 'label': df['class']})
+    # 当前这一列有多少个不重复的值
+    print(df_train.label.unique())
+    # 将类别做一个映射
+    i = 0
+    label_mapping = {}
+    for value in df_train.label.unique():
+        i += 1
+        label_mapping[value] = i
+    # 将label映射放入dataframe,也就是将label值用数值代替
+    df_train['label'] = df_train['label'].map(label_mapping)
+
+    # 将数据划分成训练集和测试集
+    x_train, x_test, y_train, y_test = train_test_split(df_train.text_clean.values, df_train.label.values,
+                                                        random_state=1)
+    # print(x_train,x_test,y_train,y_test)
+    # 将训练集中的每个文本词库的词用空格连接成一段字符串，后续需要把每条text转换为对应的向量，通过sklearn中的向量构造器
+    words = []
+    for line_index in range(len(x_train)):
+        try:
+            # 需要把list转换为string格式，可以用.join形式组合，并且用‘ ’空格取分开
+            # join()用法参考：https://blog.csdn.net/weixin_40475396/article/details/78227747
+            words.append(' '.join(x_train[line_index]))  # words里面是训练数据
+        except:
+            print(line_index, word_index)
+    # 构造一个文本向量的训练集,有了上面的words的标准格式的内容，开始构建特征向量
+    from sklearn.feature_extraction.text import CountVectorizer
+    vec = CountVectorizer(max_features=4000, lowercase=False)
+    # fit一下
+    vec.fit(words)
+    words_train = vec.transform(words)
+    # 导入在sklearn中，把beyes拿出来，有输入特征，还有label值
+    from sklearn.naive_bayes import MultinomialNB
+    # 实例化分类器对象
+    classifier = MultinomialNB()
+    # 把word向量传入classifier
+    classifier.fit(words_train, y_train)
+    MultinomialNB(alpha=1.0, class_prior=None, fit_prior=True)
+    # 试集同样的3步处理操作：内容转换为string，
+    # 空格分开 ---
+    # 把内容转换为特征向量 ----
+    # 导入贝叶斯模型传入（输入特征向量与label值）
+    test_words = []
+    for line_index in range(len(x_test)):
+        try:
+            test_words.append(' '.join(x_test[line_index]))
+        except:
+            print(line_index, word_index)
+    test_words[0]
+    # 学习原始文档中所有标记的词汇表，并将测试集转换为文本向量
+    words_test = vec.transform(test_words)
+    # 基于词频向量的，进行贝叶斯结果
+    accracy1 = classifier.score(words_test, y_test)  # 返回分类的准确率
+    print('词频模型预测准确率为:', accracy1)
+    # 检测模型
+    print(classifier.predict(vec.transform(test_words)[ss]))
+    print(y_test[ss])
+    print(x_test[ss])
+    # 另一种构造向量的方式，不采用词频，采用TF-IDF模式构造向量
+    # from sklearn.feature_extraction.text import TfidfVectorizer
+    # vectorizer = TfidfVectorizer(analyzer='word', max_features=4000, lowercase=False)
+    # vectorizer.fit(words)  # 从原始文本中学习tf和idf
+    # # 训练朴素多项分布贝叶斯模型
+    # classifier = MultinomialNB()
+    # classifier.fit(vectorizer.transform(words), y_train)
+    # MultinomialNB(alpha=1.0, class_prior=None, fit_prior=True)
+    # # 执行当前的结果，贝叶斯分类器的精度
+    # accracy2 = classifier.score(vectorizer.transform(test_words), y_test)
+    # print('TF-IDF模型预测准确率为:',accracy2)
+
+
+if __name__ == '__main__':
+    bys(ss=111)
