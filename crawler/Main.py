@@ -11,12 +11,14 @@ from sqlalchemy import create_engine
 import pymysql
 from sqlalchemy import create_engine
 import pandas as pd
+from datetime import datetime
+import os
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 '''
 爬取数据
 
 global df
-全局df为了方便保存至数据库
 '''
 
 
@@ -25,6 +27,7 @@ def csdn_article_crawler(id_, urls):
     # 随机爬虫头
     ua = UserAgent()
     headers = {'User-Agent': ua.random}
+
     url = urls
     response = requests.get(url, headers=headers, timeout=30)
     data = response.content.decode('utf-8')
@@ -37,19 +40,21 @@ def csdn_article_crawler(id_, urls):
         # article_content = itm.find('div', class_='summary oneline').text.strip()  # 详情
         article_author = itm.find('dd', class_='name').text.strip()
         is_open = '1'
-        article_add_time = int(time.time())
         article_link = itm.find('a').get('href')  # url
-        article_content = content_crawlar(article_link)
         # ", ".join(LIST) 转化成字符串并去中括号
-        # keywords = (','.join(jieba.analyse.extract_tags(article_content, topK=5, withWeight=False)))
+        keyword = itm.find('div', class_='summary oneline').text.strip()
+        article_keyword= (','.join(jieba.analyse.extract_tags(keyword, topK=5, withWeight=False)))
         # topK为返回几个TF/IDF权重最大的词，默认为5个
         # withWeight为是否返回关键词权重词
-        b = (cat_id, article_title, article_content, article_author, is_open,
-             article_add_time, article_link)
+        article_add_time = add_time_crawlar(article_link)
+        article_content = content_crawlar(article_link)
+        article_img = get_thumb(article_link)
+        b = (cat_id, article_title, article_content, article_author, is_open,article_keyword,
+             article_add_time, article_link,article_img)
         articles.append(b)
     global df
-    df = pd.DataFrame(articles, columns=['cat_id', 'title', 'content', 'author', 'is_open',
-                                         'add_time', 'link'])
+    df = pd.DataFrame(articles, columns=['cat_id', 'title', 'content', 'author', 'is_open','keywords',
+                                         'add_time', 'link','thumb'])
     df.index = df.index + 1
     df.to_csv('Training_Data.csv', encoding='utf-8-sig')
     database_save()
@@ -59,8 +64,46 @@ def csdn_article_crawler(id_, urls):
     print(str(id_) + '新增加文章%d篇' % line)
 
 
-def article_crawler1(id_, urls):
-    import jieba.analyse
+# def article_crawler1(id_, urls):
+#     import jieba.analyse
+#     # 随机爬虫头
+#     ua = UserAgent()
+#     headers = {'User-Agent': ua.random}
+#     url = urls
+#     response = requests.get(url, headers=headers, timeout=30)
+#     data = response.content.decode('utf-8')
+#     soup = BeautifulSoup(data, 'lxml')
+#     items = soup.find_all('li', class_='clearfix')
+#     articles = []
+#     for itm in items:
+#         cat_id = id_
+#         article_title = itm.find('h2').text.strip()  # strip()去空格
+#         # article_content = itm.find('div', class_='summary oneline').text.strip()  # 详情
+#         article_author = itm.find('dd', class_='name').text.strip()
+#         is_open = '1'
+#         article_link = itm.find('a').get('href')  # url
+#         article_content = content_crawlar(article_link)
+#         article_add_time = add_time_crawlar(article_link)
+#         # ", ".join(LIST) 转化成字符串并去中括号
+#         # keywords = (','.join(jieba.analyse.extract_tags(article_content, topK=5, withWeight=False)))
+#         # topK为返回几个TF/IDF权重最大的词，默认为5个
+#         # withWeight为是否返回关键词权重词
+#         b = (cat_id, article_title, article_content, article_author, is_open,
+#              article_add_time, article_link)
+#         articles.append(b)
+#     global df
+#     df = pd.DataFrame(articles, columns=['cat_id', 'title', 'content', 'author', 'is_open',
+#                                          'add_time', 'link'])
+#     df.index = df.index + 1
+#     df.to_csv('Training_Data.csv', encoding='utf-8-sig')
+#     database_save()
+#     line = len(df)
+#     if line == 0:
+#         print('该分类获取失败')
+#     print(str(id_) + '新增加文章%d篇' % line)
+
+
+def add_time_crawlar(urls):
     # 随机爬虫头
     ua = UserAgent()
     headers = {'User-Agent': ua.random}
@@ -68,37 +111,15 @@ def article_crawler1(id_, urls):
     response = requests.get(url, headers=headers, timeout=30)
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
-    print(soup)
-    items = soup.find_all('li', class_='clearfix')
-    print(items)
-    articles = []
-    for itm in items:
-        cat_id = id_
-        article_title = itm.find('h2').text.strip()  # strip()去空格
-        print(article_title)
-        # article_content = itm.find('div', class_='summary oneline').text.strip()  # 详情
-        article_author = itm.find('dd', class_='name').text.strip()
-        is_open = '1'
-        article_add_time = int(time.time())
-        article_link = itm.find('a').get('href')  # url
-        article_content = content_crawlar(article_link)
-        # ", ".join(LIST) 转化成字符串并去中括号
-        # keywords = (','.join(jieba.analyse.extract_tags(article_content, topK=5, withWeight=False)))
-        # topK为返回几个TF/IDF权重最大的词，默认为5个
-        # withWeight为是否返回关键词权重词
-        b = (cat_id, article_title, article_content, article_author, is_open,
-             article_add_time, article_link)
-        articles.append(b)
-    global df
-    df = pd.DataFrame(articles, columns=['cat_id', 'title', 'content', 'author', 'is_open',
-                                         'add_time', 'link'])
-    df.index = df.index + 1
-    df.to_csv('Training_Data.csv', encoding='utf-8-sig')
-    database_save()
-    line = len(df)
-    if line == 0:
-        print('该分类获取失败')
-    print(str(id_) + '新增加文章%d篇' % line)
+    times = soup.find('span', class_='time')
+    try:
+        add_time = times.text
+        timeArray = time.strptime(add_time, '%Y-%m-%d %H:%M:%S')
+        timeStamp = int(time.mktime(timeArray))
+    # print(timeStamp)
+    except:
+        timeStamp = int(time.time())
+    return timeStamp
 
 
 '''
@@ -116,6 +137,22 @@ def content_crawlar(urls):
     soup = BeautifulSoup(data, 'lxml')
     items = soup.find_all('div', class_='article_content clearfix')
     return items
+
+
+def get_thumb(urls):
+    ua = UserAgent()
+    headers = {'User-Agent': ua.random}
+    url = urls
+    response = requests.get(url, headers=headers, timeout=30)
+    data = response.content.decode('utf-8')
+    soup = BeautifulSoup(data, 'lxml')
+    items = soup.find_all(id='content_views')
+    try:
+        for i in items:
+            img = i.find('img').get('src')
+    except:
+        img = ''    
+    return img
 
 
 '''
@@ -180,6 +217,17 @@ def database_read():
 
 def main():
     csdn_get()
+
+
+'''
+定时
+'''
+
+
+def run(hour, minute):
+    scheduler = BlockingScheduler()
+    scheduler.add_job(main, 'cron', hour=hour, minute=minute)
+    scheduler.start()
 
 
 if __name__ == '__main__':
