@@ -1,5 +1,8 @@
 import csv
+import threading
+
 import requests
+import tqdm
 from fake_useragent import UserAgent
 from bs4 import BeautifulSoup
 import pymysql
@@ -34,7 +37,7 @@ def csdn_article_crawler(id_, urls):
     soup = BeautifulSoup(data, 'lxml')
     items = soup.find_all('div', class_='list_con')
     articles = []
-    for itm in items:
+    for itm in tqdm.tqdm(items):
         cat_id = id_
         article_title = itm.find('a').text.strip()  # strip()去空格
         # article_content = itm.find('div', class_='summary oneline').text.strip()  # 详情
@@ -162,7 +165,7 @@ def get_thumb(urls):
 
 def csdn_get():
     # article_crawler1(9, 'https://blog.csdn.net/nav/watchers')  # 动态
-    csdn_article_crawler(10, 'https://blog.csdn.net/nav/career')  # 程序人生
+    # csdn_article_crawler(10, 'https://blog.csdn.net/nav/career')  # 程序人生
     csdn_article_crawler(11, 'https://blog.csdn.net/nav/python')  # python
     csdn_article_crawler(12, 'https://blog.csdn.net/nav/java')  # Java
     csdn_article_crawler(13, 'https://blog.csdn.net/nav/web')  # 大前端
