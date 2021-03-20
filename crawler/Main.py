@@ -1,5 +1,4 @@
 import csv
-import threading
 import requests
 from tqdm import tqdm
 from fake_useragent import UserAgent
@@ -34,7 +33,7 @@ def csdn_article_crawler(id_, urls):
     headers = {'User-Agent': ua.random}
 
     url = urls
-    response = requests.get(url, headers=headers, timeout=30)
+    response = requests.get(url, headers=headers, timeout=(30, 50))
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
     items = soup.find_all('div', class_='list_con')
@@ -53,7 +52,7 @@ def csdn_article_crawler(id_, urls):
         # withWeight为是否返回关键词权重词
         article_add_time = add_time_crawlar(article_link)
         article_content = content_crawlar(article_link)
-        article_img = get_thumb(article_link)
+        article_img = get_thumb(id_,article_link)
         b = (cat_id, article_title, article_content, article_author, is_open, article_keyword,
              article_add_time, article_link, article_img)
         articles.append(b)
@@ -78,7 +77,7 @@ def add_time_crawlar(urls):
     ua = UserAgent()
     headers = {'User-Agent': ua.random}
     url = urls
-    response = requests.get(url, headers=headers, timeout=30)
+    response = requests.get(url, headers=headers, timeout=(30, 50))
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
     times = soup.find('span', class_='time')
@@ -101,21 +100,21 @@ def content_crawlar(urls):
     ua = UserAgent()
     headers = {'User-Agent': ua.random}
     url = urls
-    response = requests.get(url, headers=headers, timeout=30)
+    response = requests.get(url, headers=headers, timeout=(30, 50))
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
     items = str(soup.find_all("div", {"id": "content_views"}))
-    # pattern = re.compile(r'https:\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?')
-    # a = items
-    # print(str(pattern.match(a)))
-    # content_url = upload.upload(pattern)
-    # print(content_url)
-    # content = re.sub(r'https:+/+/([-\w]+\.)+[\w+]+(/[-\w./?%&=]*)?', content_url, items)
+    pattern = re.compile(r'https:\/\/+img-+[\w\-_]+\.[\w\-_]+[\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#]?')
+    paths = pattern.findall(items)
+    items_ = items
+    for path in paths:
+        content_url = upload.upload(path)
+        items_ = pattern.sub(content_url, items)
+    return items_
 
-    return items
 
-
-def get_thumb(urls):
+def get_thumb(id_,urls):
+    import pic
     """
     获取文章中第一张图片链接的函数，如果没有返回空
     :param urls:
@@ -124,7 +123,7 @@ def get_thumb(urls):
     ua = UserAgent()
     headers = {'User-Agent': ua.random}
     url = urls
-    response = requests.get(url, headers=headers, timeout=30)
+    response = requests.get(url, headers=headers, timeout=(30, 50))
     data = response.content.decode('utf-8')
     soup = BeautifulSoup(data, 'lxml')
     items = soup.find_all(id='content_views')
@@ -137,16 +136,16 @@ def get_thumb(urls):
             else:
                 img_path = upload.upload(img)
     except:
-        img_path = ''
+        img_path = pic.thumbs(id_)
 
     return img_path
 
 
 def csdn_get():
-    csdn_article_crawler(10, 'https://blog.csdn.net/nav/career')  # 程序人生
-    csdn_article_crawler(11, 'https://blog.csdn.net/nav/python')  # python
+    # csdn_article_crawler(10, 'https://blog.csdn.net/nav/career')  # 程序人生
+    # csdn_article_crawler(11, 'https://blog.csdn.net/nav/python')  # python
     csdn_article_crawler(12, 'https://blog.csdn.net/nav/java')  # Java
-    csdn_article_crawler(13, 'https://blog.csdn.net/nav/web')  # 大前端
+    csdn_article_crawler(13, 'https://blog.csdn.net/nav/web')  # 大前端c
     csdn_article_crawler(14, 'https://blog.csdn.net/nav/arch')  # 架构
     csdn_article_crawler(15, 'https://blockchain.csdn.net/')  # 区块链
     csdn_article_crawler(16, 'https://blog.csdn.net/nav/db')  # 数据库
@@ -166,7 +165,7 @@ def database_save():
     将存放在df中的内容存入数据库
     """
     # create_engine('mysql+pymysql://用户名:密码@主机/库名?charset=utf8')
-    engine = create_engine('')
+    engine = create_engine('mysql+pymysql://root:wuzongbo751130@47.106.220.247/shop?charset=utf8mb4')
     pd.io.sql.to_sql(df, 'article', engine, index=False, schema='shop', if_exists='append')
     engine = create_engine('mysql+pymysql://root:333333@localhost/blog?charset=utf8mb4')
     pd.io.sql.to_sql(df, 'article', engine, index=False, schema='blog', if_exists='append')
